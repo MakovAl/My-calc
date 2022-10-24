@@ -120,32 +120,41 @@ public class MainActivity extends AppCompatActivity {
      * Метод получает на вход строку содержащию выражение, в зависимости от находящегося в ней
      * оператора выполняется соотвествущее этому оператору действие.
      *
-     * @param textCalcScreen
+     * @param textCalcScreen Выражение введенное пользователем
      * @return Результат вычисления
      */
     private String calc(String textCalcScreen) {
         String[] operands;
+        Calculation calculation = new Calculation();
         String stringResult = null;
 
         if (textCalcScreen.contains("*")) {
             operands = textCalcScreen.split("\\*");
-            int result = Integer.parseInt(operands[0]) * Integer.parseInt(operands[1]);
+            double operandOne = Double.parseDouble(operands[0]);
+            double operandTwo = Double.parseDouble(operands[1]);
+            double result = calculation.mul(operandOne, operandTwo);
             stringResult = String.valueOf(result);
 
         }
         if (textCalcScreen.contains("/")) {
             operands = textCalcScreen.split("/");
-            double result = Double.parseDouble(operands[0]) / Double.parseDouble(operands[1]);
+            double operandOne = Double.parseDouble(operands[0]);
+            double operandTwo = Double.parseDouble(operands[1]);
+            double result = calculation.div(operandOne, operandTwo);
             stringResult = String.valueOf(result);
         }
         if (textCalcScreen.contains("+")) {
             operands = textCalcScreen.split("\\+");
-            int result = Integer.parseInt(operands[0]) + Integer.parseInt(operands[1]);
+            double operandOne = Double.parseDouble(operands[0]);
+            double operandTwo = Double.parseDouble(operands[1]);
+            double result = calculation.add(operandOne, operandTwo);
             stringResult = String.valueOf(result);
         }
         if (textCalcScreen.contains("-")) {
             operands = textCalcScreen.split("-");
-            int result = Integer.parseInt(operands[0]) - Integer.parseInt(operands[1]);
+            double operandOne = Double.parseDouble(operands[0]);
+            double operandTwo = Double.parseDouble(operands[1]);
+            double result = calculation.minus(operandOne, operandTwo);
             stringResult = String.valueOf(result);
         }
         Log.i("MyCalc", "Результат: " + textCalcScreen + " = " + stringResult);
@@ -158,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
      * <p>
      * В данном случае установливает активность, которая будет отображаться на экране
      *
-     * @param savedInstanceState
+     * @param savedInstanceState сохраненные данные
      * @see this#calc(String)
      */
     @Override
