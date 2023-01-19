@@ -1,24 +1,35 @@
 package com.makoval.mycalc;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 
-import java.util.List;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.makoval.mycalc.calculation.ICalculation;
+import com.makoval.mycalc.calculation.JavaScriptCalculation;
+import com.makoval.mycalc.calculation.RPNCalculation;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Главный класс прложения калькулятор
  */
 public class MainActivity extends AppCompatActivity {
 
+    Map<String, ICalculation> calculator = new HashMap<>();
+    ICalculation calculation;
+    /**
+     * Способ вычисления: JavaScript или RPN
+     */
+    String calculationMethod = "RPN";
+
     /**
      * Метод получает кнопки с которыми может взаимодействовать пользователь, задает поведение
      * при нажатие на них, в случае нажатия на кнопку с цифрами или оператором к строке выражения
-     * добавляется симовл
-     * соответсвующий кнопке.
+     * добавляется симовл соответсвующий кнопке.
      */
     private void setOnClickListeners() {
 
@@ -39,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         Button buttonDiv = (Button) findViewById(R.id.button_div);
         Button buttonDelete = (Button) findViewById(R.id.button_delete);
         Button buttonEqual = (Button) findViewById(R.id.button_equal);
-
+        CorrectionInput correctionInput = new CorrectionInput("+-*/", "*/");
 
         buttonOne.setOnClickListener(view -> {
             calcScreen.setText(calcScreen.getText() + "1");
@@ -82,34 +93,49 @@ public class MainActivity extends AppCompatActivity {
             Log.i("MyCalc", "Пользователь нажал кнопку '0' ");
         });
         buttonPlus.setOnClickListener(view -> {
-            calcScreen.setText(calcScreen.getText() + "+");
+            String textScreen = calcScreen.getText().toString();
+            textScreen = correctionInput.correct(textScreen, "+");
+            calcScreen.setText(textScreen);
             Log.i("MyCalc", "Пользователь нажал кнопку '+' ");
         });
         buttonMinus.setOnClickListener(view -> {
-            calcScreen.setText(calcScreen.getText() + "-");
+            String textScreen = calcScreen.getText().toString();
+            textScreen = correctionInput.correct(textScreen, "-");
+            calcScreen.setText(textScreen);
             Log.i("MyCalc", "Пользователь нажал кнопку '-' ");
         });
         buttonMul.setOnClickListener(view -> {
-            calcScreen.setText(calcScreen.getText() + "*");
+            String textScreen = calcScreen.getText().toString();
+            textScreen = correctionInput.correct(textScreen, "*");
+            calcScreen.setText(textScreen);
+            System.out.println(textScreen);
             Log.i("MyCalc", "Пользователь нажал кнопку '*' ");
         });
         buttonDiv.setOnClickListener(view -> {
-            calcScreen.setText(calcScreen.getText() + "/");
+            String textScreen = calcScreen.getText().toString();
+            textScreen = correctionInput.correct(textScreen, "/");
+            calcScreen.setText(textScreen);
             Log.i("MyCalc", "Пользователь нажал кнопку '/' ");
         });
         buttonDelete.setOnClickListener(view -> {
+            String textScreen = calcScreen.getText().toString();
             try {
-                Log.i("MyCalc", "Пользователь нажал кнопку '--' ");
-                String textScreen = calcScreen.getText().toString();
+                Log.i("MyCalc", "Пользователь нажал кнопку '<-' ");
                 calcScreen.setText(textScreen.substring(0, textScreen.length() - 1));
             } catch (StringIndexOutOfBoundsException ex) {
                 Log.e("MyCalc", ex.getMessage());
             }
         });
+
+        buttonDelete.setOnLongClickListener(view -> {
+            calcScreen.setText("");
+            return true;
+        });
+
         buttonEqual.setOnClickListener(view -> {
-            Log.i("MyCalc", "Пользователь нажал кнопку '=' ");
             String textScreen = calcScreen.getText().toString();
-            calcScreen.setText(calc(textScreen));
+            Log.i("MyCalc", "Пользователь нажал кнопку '=' ");
+            calcScreen.setText(calculation.calc(textScreen));
         });
     }
 
@@ -135,22 +161,19 @@ public class MainActivity extends AppCompatActivity {
             double result = calculation.mul(operandOne, operandTwo);
             stringResult = String.valueOf(result);
 
-        }
-        if (textCalcScreen.contains("/")) {
+        } else if (textCalcScreen.contains("/")) {
             operands = textCalcScreen.split("/");
             double operandOne = Double.parseDouble(operands[0]);
             double operandTwo = Double.parseDouble(operands[1]);
             double result = calculation.div(operandOne, operandTwo);
             stringResult = String.valueOf(result);
-        }
-        if (textCalcScreen.contains("+")) {
+        } else if (textCalcScreen.contains("+")) {
             operands = textCalcScreen.split("\\+");
             double operandOne = Double.parseDouble(operands[0]);
             double operandTwo = Double.parseDouble(operands[1]);
             double result = calculation.add(operandOne, operandTwo);
             stringResult = String.valueOf(result);
-        }
-        if (textCalcScreen.contains("-")) {
+        } else if (textCalcScreen.contains("-")) {
             operands = textCalcScreen.split("-");
             double operandOne = Double.parseDouble(operands[0]);
             double operandTwo = Double.parseDouble(operands[1]);
@@ -162,10 +185,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+
     /**
      * Метод выполняющий действия при запуске приложения.
      * <p>
-     * В данном случае установливает активность, которая будет отображаться на экране
+     * В данном случае устанавливает макет, которая будет отображаться на экране
+     * Выбирается способ вычисления
      *
      * @param savedInstanceState сохраненные данные
      * @see this#calc(String)
@@ -175,6 +200,11 @@ public class MainActivity extends AppCompatActivity {
         Log.d("MyCalc", "Вызов onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        calculator.put("RPN", new RPNCalculation());
+        calculator.put("JavaScript", new JavaScriptCalculation());
+
+        calculation = calculator.get(calculationMethod);
 
         Log.i("MyCalc", "Тест Info");
         Log.e("MyCalc", "Тест Error");
